@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Free Internet Speed Test</title>
+<style>
+  :root{
+    --bg:#0b0f17; --panel:#121826; --line:#1f2737; --text:#e8ecf3; --muted:#8a94a8;
+    --down:#38bdf8; --up:#a78bfa; --ping:#34d399; --warn:#fbbf24;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  button:active{transform:scale(.97)!important}
+  body{margin:0;min-height:100vh;background:radial-gradient(1200px 600px at 50% -10%,#16203a 0,var(--bg) 60%);
+       color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+       display:flex;justify-content:center;padding:18px 14px 28px}
+  .wrap{width:100%;max-width:760px}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:20px}
+  h1{font-size:22px;margin:0;letter-spacing:.2px}
+  h1 span{color:var(--down)}
+  .tag{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:3px 10px;border-radius:99px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}
+  .gauge-box{display:flex;flex-direction:column;align-items:center}
+  svg.gauge{width:100%;max-width:380px;height:auto}
+  .gnum{font-size:46px;font-weight:200;letter-spacing:-.5px;fill:var(--text);font-variant-numeric:tabular-nums}
+  .gunit{font-size:14px;fill:var(--muted)}
+  .phase{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;min-height:18px}
+  .tick{font-size:12px;font-weight:700;fill:#8a94a8}
+  button.go{margin-top:6px;background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:0;border-radius:99px;
+       padding:14px 44px;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 8px 30px #3b82f640;transition:transform .1s}
+  button.go:hover{transform:translateY(-1px)}
+  button.go.stop{background:linear-gradient(135deg,#ef4444,#be123c);box-shadow:0 8px 30px #ef444440}
+  button.go:disabled{opacity:.5;cursor:default;transform:none}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .stat .lbl{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .stat .val{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  .stat .u{font-size:12px;color:var(--muted);font-weight:400;margin-left:3px}
+  .meta{margin-top:14px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center}
+  .meta b{color:var(--text);font-weight:500}
+  .verdict{margin-top:14px;text-align:center;font-size:14px;min-height:21px}
+  .err{color:var(--warn)}
+  h2{font-size:15px;margin:26px 0 10px;display:flex;justify-content:space-between;align-items:center}
+  h2 button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:3px 10px;cursor:pointer;font-size:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+  th,td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:500}
+  th:first-child,td:first-child{text-align:left}
+  .empty{color:var(--muted);text-align:center;padding:16px}
+  footer{margin-top:24px;font-size:12px;color:var(--muted);text-align:center}
+  @media (max-width:600px){.grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>⚡ Speed<span>Test</span></h1>
+    <div class="tag">100% free · no ads · no sign-up</div>
+  </header>
+
+  <div class="card gauge-box">
+    <div id="phase" class="phase">Ready</div>
+    <svg class="gauge" viewBox="0 22 300 260">
+      <defs>
+        <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" y1="260" x2="0" y2="40">
+          <stop id="s1" offset="0" stop-color="#00b4ff"/><stop id="s2" offset="1" stop-color="#5ef3f5"/>
+        </linearGradient>
+        <radialGradient id="wedgeg" gradientUnits="userSpaceOnUse" cx="150" cy="150" r="98">
+          <stop offset="0.35" id="w1" stop-color="#5ef3f5" stop-opacity="0"/>
+          <stop offset="1" id="w2" stop-color="#5ef3f5" stop-opacity="0.38"/>
+        </radialGradient>
+        <linearGradient id="needleg" gradientUnits="userSpaceOnUse" x1="162" y1="0" x2="212" y2="0">
+          <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+          <stop offset="1" stop-color="#ffffff" stop-opacity="1"/>
+        </linearGradient>
+      </defs>
+      <path id="track" fill="none" stroke="#283043" stroke-width="26"/>
+      <path id="wedge" fill="url(#wedgeg)"/>
+      <path id="arc" fill="none" stroke="url(#g)" stroke-width="26"/>
+      <g id="ticks"></g>
+      <g id="needle">
+        <path d="M162 149.4 L209 146.2 Q213 150 209 153.8 L162 150.6 Z" fill="url(#needleg)"/>
+      </g>
+      <text id="gnum" class="gnum" x="150" y="252" text-anchor="middle">0.00</text>
+      <g id="unitrow" transform="translate(150 272)">
+        <g id="uicon" transform="translate(-26 -4)">
+          <circle r="7" fill="none" stroke-width="1.5" id="uiconc" stroke="#5ef3f5"/>
+          <path id="uicona" d="M0 -3.5 V3.5 M-3 0.8 L0 3.8 L3 0.8" fill="none" stroke="#5ef3f5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <text class="gunit" x="-14" y="0" text-anchor="start">Mbps</text>
+      </g>
+    </svg>
+    <button class="go" id="go">Start test</button>
+    <div class="verdict" id="verdict"></div>
+    <div class="meta" id="meta"></div>
+  </div>
+
+  <div class="grid">
+    <div class="stat"><div class="lbl"><span class="dot" style="background:var(--down)"></span>Download</div>
+      <div class="val" id="vDown">–<span class="u">Mbps</span></div></div>
+    <div class="stat"><div class="lbl"><span class="dot" style="background:var(--up)"></span>Upload</div>
+      <div class="val" id="vUp">–<span class="u">Mbps</span></div></div>
+    <div class="stat"><div class="lbl"><span class="dot" style="background:var(--ping)"></span>Ping</div>
+      <div class="val" id="vPing">–<span class="u">ms</span></div></div>
+    <div class="stat"><div class="lbl"><span class="dot" style="background:var(--warn)"></span>Jitter</div>
+      <div class="val" id="vJit">–<span class="u">ms</span></div></div>
+  </div>
+
+  <h2>Your history <button id="clear">Clear</button></h2>
+  <div class="card" style="padding:6px 8px">
+    <table>
+      <thead><tr><th>Date</th><th>Download</th><th>Upload</th><th>Ping</th><th>Jitter</th></tr></thead>
+      <tbody id="hist"></tbody>
+    </table>
+  </div>
+
+  <footer>Tests run against Cloudflare's free global speed-test network, using the server closest to you.
+    Results are saved only in this browser.</footer>
+</div>
+
+<script>
+const BASE = "https://speed.cloudflare.com";
+const DL_TIME = 10000, UL_TIME = 8000, STREAMS = 4, PINGS = 20;
+const $ = id => document.getElementById(id);
+
+/* ---------- Gauge ---------- */
+const CX=150, CY=150, R=110, A0=Math.PI*0.75, A1=Math.PI*2.25;   // 270° sweep
+const SCALE=[0,5,10,50,100,250,500,750,1000];                      // Speedtest-style scale
+const N=SCALE.length-1;
+function polar(a,r=R){return [CX+r*Math.cos(a), CY+r*Math.sin(a)];}
+function arcPath(a,b,r=R){const [x1,y1]=polar(a,r),[x2,y2]=polar(b,r);const big=(b-a)>Math.PI?1:0;
+  return `M${x1} ${y1} A${r} ${r} 0 ${big} 1 ${x2} ${y2}`;}
+function frac(v){ if(v<=0) return 0; if(v>=1000) return 1;
+  for(let i=1;i<SCALE.length;i++) if(v<=SCALE[i])
+    return (i-1+(v-SCALE[i-1])/(SCALE[i]-SCALE[i-1]))/N; }
+$("track").setAttribute("d",arcPath(A0,A1));
+let tickHtml="";
+for(let i=0;i<=N;i++){
+  const a=A0+(A1-A0)*i/N, [x,y]=polar(a,R-36);
+  tickHtml+=`<text class="tick" x="${x}" y="${y+4}" text-anchor="middle">${SCALE[i]}</text>`;
+}
+$("ticks").innerHTML=tickHtml;
+
+/* smooth animation: setGauge sets a target, a frame loop eases toward it */
+let target=0, shown=0;
+function drawGauge(){
+  shown += (target-shown)*0.12;
+  if(Math.abs(target-shown)<0.005) shown=target;
+  const f=frac(shown), a=A0+(A1-A0)*f;
+  if(f>0.002){
+    $("arc").setAttribute("d", arcPath(A0,a));
+    const [x1,y1]=polar(A0,R-13),[x2,y2]=polar(a,R-13), big=(a-A0)>Math.PI?1:0;
+    $("wedge").setAttribute("d",`M${CX} ${CY} L${x1} ${y1} A${R-13} ${R-13} 0 ${big} 1 ${x2} ${y2} Z`);
+  } else { $("arc").setAttribute("d",""); $("wedge").setAttribute("d",""); }
+  $("needle").setAttribute("transform",`rotate(${a*180/Math.PI} ${CX} ${CY})`);
+  $("gnum").textContent = shown>=100 ? shown.toFixed(1) : shown.toFixed(2);
+  requestAnimationFrame(drawGauge);
+}
+function setGauge(v){ target=Math.max(0,v||0); }
+requestAnimationFrame(drawGauge);
+/* colors per phase; arrow points down for download, up for upload */
+function setColor(a,b){
+  $("s1").setAttribute("stop-color",a); $("s2").setAttribute("stop-color",b);
+  ["w1","w2"].forEach(id=>$(id).setAttribute("stop-color",b));
+  $("uiconc").setAttribute("stroke",b); $("uicona").setAttribute("stroke",b);
+}
+function setArrow(up){ $("uicona").setAttribute("transform", up?"rotate(180)":""); }
+function setPhase(t){$("phase").textContent=t;}
+setGauge(0);
+
+/* ---------- Helpers ---------- */
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const rnd = () => Math.random().toString(36).slice(2);
+function median(a){const s=[...a].sort((x,y)=>x-y);const m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;}
+function fmt(v){return v==null?"–":(v>=100?v.toFixed(0):v.toFixed(1));}
+
+/* ---------- Stop support ---------- */
+let running=false, cancelled=false; let ctrls=new Set();
+const STOPPED=new Error("stopped");
+function cfetch(url,opt={}){const c=new AbortController(); ctrls.add(c); return fetch(url,{...opt,signal:c.signal});}
+function checkStop(){ if(cancelled) throw STOPPED; }
+function stopTest(){ cancelled=true; ctrls.forEach(c=>{try{c.abort()}catch(e){}}); ctrls.clear(); }
+
+/* ---------- Ping & jitter ---------- */
+async function measurePing(){
+  const times=[];
+  for(let i=0;i<PINGS;i++){
+    checkStop();
+    const t0=performance.now();
+    const r=await cfetch(`${BASE}/__down?bytes=0&r=${rnd()}`,{cache:"no-store"});
+    await r.arrayBuffer();
+    const t=performance.now()-t0;
+    if(i>0) times.push(t);           // first request includes connection setup
+    $("vPing").innerHTML=`${Math.round(Math.min(...times.length?times:[t]))}<span class="u">ms</span>`;
+  }
+  const ping=Math.min(...times);
+  let j=0; for(let i=1;i<times.length;i++) j+=Math.abs(times[i]-times[i-1]);
+  return {ping, jitter: j/(times.length-1)};
+}
+
+/* ---------- Download ---------- */
+async function measureDownload(){
+  let bytes=0, stop=false; const samples=[];
+  const start=performance.now();
+  async function stream(){
+    while(!stop && !cancelled){
+      const ctrl=new AbortController(); ctrls.add(ctrl);
+      try{
+        const r=await fetch(`${BASE}/__down?bytes=25000000&r=${rnd()}`,{cache:"no-store",signal:ctrl.signal});
+        const reader=r.body.getReader();
+        while(true){
+          if(stop||cancelled){ctrl.abort();break;}
+          const {done,value}=await reader.read();
+          if(done) break;
+          bytes+=value.length;
+        }
+      }catch(e){ if(!stop && !cancelled) throw e; }
+    }
+  }
+  const workers=Array.from({length:STREAMS},stream);
+  let lastB=0,lastT=start;
+  while(performance.now()-start<DL_TIME && !cancelled){
+    await sleep(200);
+    const now=performance.now();
+    const mbps=(bytes-lastB)*8/((now-lastT)/1000)/1e6;
+    if(now-start>1500) samples.push(mbps);        // skip TCP ramp-up
+    lastB=bytes; lastT=now; setGauge(mbps);
+    $("vDown").innerHTML=`${fmt(mbps)}<span class="u">Mbps</span>`;
+  }
+  stop=true; await Promise.allSettled(workers);
+  return robust(samples);
+}
+
+/* ---------- Upload ---------- */
+async function measureUpload(){
+  let bytes=0, stop=false; const samples=[];
+  const CHUNK=new Uint8Array(4*1024*1024); for(let i=0;i<CHUNK.length;i+=4096) CHUNK[i]=Math.random()*255;
+  let size=256*1024;
+  const start=performance.now();
+  async function stream(){
+    while(!stop && !cancelled){
+      const body=new Blob([CHUNK.subarray(0,size)]);
+      const t0=performance.now();
+      try{ await cfetch(`${BASE}/__up?r=${rnd()}`,{method:"POST",body,mode:"no-cors",cache:"no-store"}); }
+      catch(e){ if(cancelled||stop) return; throw e; }
+      bytes+=size;
+      if(performance.now()-t0<1000 && size<CHUNK.length) size*=2;   // grow chunk for fast links
+    }
+  }
+  const workers=Array.from({length:STREAMS},stream);
+  let lastB=0,lastT=start; const win=[];
+  while(performance.now()-start<UL_TIME && !cancelled){
+    await sleep(250);
+    const now=performance.now();
+    win.push({b:bytes,t:now}); if(win.length>8) win.shift();     // 2-second moving window
+    const w0=win[0], mbps= win.length>1 ? (bytes-w0.b)*8/((now-w0.t)/1000)/1e6 : 0;
+    if(now-start>2000) samples.push(mbps);
+    setGauge(mbps);
+    $("vUp").innerHTML=`${fmt(mbps)}<span class="u">Mbps</span>`;
+  }
+  stop=true; await Promise.race([Promise.allSettled(workers), sleep(3000)]);
+  return robust(samples);
+}
+
+/* average of the top 70% of samples, drops slow-start dips */
+function robust(s){ if(!s.length) return 0;
+  const sorted=[...s].sort((a,b)=>a-b); const keep=sorted.slice(Math.floor(sorted.length*0.3));
+  return keep.reduce((a,b)=>a+b,0)/keep.length; }
+
+/* ---------- Connection info ---------- */
+async function loadMeta(){
+  try{
+    const t=await (await fetch(`${BASE}/cdn-cgi/trace`,{cache:"no-store"})).text();
+    const kv=Object.fromEntries(t.trim().split("\n").map(l=>l.split("=")));
+    let html=`<span>Your IP: <b>${kv.ip||"?"}</b></span><span>Server: <b>${kv.colo||"?"}</b></span>`;
+    try{const m=await (await fetch(`${BASE}/meta`,{cache:"no-store"})).json();
+      if(m.asOrganization) html=`<span>Provider: <b>${m.asOrganization}</b></span>`+html;
+      if(m.city) html+=`<span>Location: <b>${m.city}${m.country?", "+m.country:""}</b></span>`;}catch(e){}
+    $("meta").innerHTML=html;
+  }catch(e){}
+}
+
+/* ---------- Verdict ---------- */
+function verdict(d,u,p){
+  let txt;
+  if(d>=100) txt="Excellent 🚀 — 4K streaming, big downloads and gaming on many devices at once.";
+  else if(d>=25) txt="Very good 👍 — HD/4K streaming and video calls run smoothly.";
+  else if(d>=10) txt="Good — fine for HD streaming, browsing and video calls.";
+  else if(d>=3) txt="Basic — OK for browsing and SD video, may struggle with HD.";
+  else txt="Slow 🐢 — pages and videos will load slowly.";
+  if(p>100) txt+=" High ping may cause lag in games and calls.";
+  return txt;
+}
+
+/* ---------- History ---------- */
+const KEY="speedtest-history";
+function getHist(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return []}}
+function saveHist(h){try{localStorage.setItem(KEY,JSON.stringify(h.slice(0,20)))}catch(e){}}
+function renderHist(){
+  const h=getHist();
+  $("hist").innerHTML = h.length ? h.map(r=>`<tr><td>${new Date(r.t).toLocaleString()}</td>
+    <td>${fmt(r.d)} Mbps</td><td>${fmt(r.u)} Mbps</td><td>${Math.round(r.p)} ms</td><td>${r.j.toFixed(1)} ms</td></tr>`).join("")
+    : `<tr><td colspan="5" class="empty">No tests yet. Press “Start test”.</td></tr>`;
+}
+$("clear").onclick=()=>{saveHist([]);renderHist();};
+renderHist();
+
+/* ---------- Run ---------- */
+$("go").onclick=()=>{ if(running) stopTest(); else runTest(); };
+
+async function runTest(){
+  const btn=$("go");
+  running=true; cancelled=false; ctrls=new Set();
+  btn.textContent="Stop"; btn.classList.add("stop");
+  $("verdict").textContent=""; $("verdict").className="verdict";
+  ["vDown","vUp"].forEach(id=>$(id).innerHTML=`–<span class="u">Mbps</span>`);
+  $("vPing").innerHTML=`–<span class="u">ms</span>`; $("vJit").innerHTML=`–<span class="u">ms</span>`;
+  try{
+    loadMeta();
+    setPhase("Ping"); setColor("#10b981","#6ee7b7"); setArrow(false);
+    const {ping,jitter}=await measurePing(); checkStop();
+    $("vPing").innerHTML=`${Math.round(ping)}<span class="u">ms</span>`;
+    $("vJit").innerHTML=`${jitter.toFixed(1)}<span class="u">ms</span>`;
+
+    setPhase("Download"); setColor("#00b4ff","#5ef3f5"); setArrow(false);
+    const d=await measureDownload(); checkStop();
+    $("vDown").innerHTML=`${fmt(d)}<span class="u">Mbps</span>`;
+    setGauge(0); await sleep(700); checkStop();
+
+    setPhase("Upload"); setColor("#8b5cf6","#e879f9"); setArrow(true);
+    const u=await measureUpload(); checkStop();
+    $("vUp").innerHTML=`${fmt(u)}<span class="u">Mbps</span>`;
+
+    // test finished: needle goes back down to zero
+    setGauge(0); setPhase("Test complete ✓"); setColor("#00b4ff","#5ef3f5"); setArrow(false);
+    $("verdict").textContent=verdict(d,u,ping);
+    const h=getHist(); h.unshift({t:Date.now(),d,u,p:ping,j:jitter}); saveHist(h); renderHist();
+  }catch(e){
+    setGauge(0);
+    if(cancelled){
+      setPhase("Stopped"); setColor("#00b4ff","#5ef3f5"); setArrow(false);
+      $("verdict").textContent="Test stopped. Press “Start test” to run it again.";
+    }else{
+      setPhase("Error");
+      $("verdict").className="verdict err";
+      $("verdict").textContent="Couldn't reach the test server. Check your connection, or turn off ad-blockers / VPN and try again.";
+    }
+  }
+  running=false; btn.classList.remove("stop");
+  btn.textContent = cancelled ? "Start test" : "Test again";
+}
+</script>
+</body>
+</html>
